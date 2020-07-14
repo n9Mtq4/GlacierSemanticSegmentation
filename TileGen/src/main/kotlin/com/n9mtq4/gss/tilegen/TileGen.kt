@@ -18,6 +18,7 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
 val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
 
+val DATA_INPUT_DIR = File("../data/ls8")
 val TILE_OUTPUT_DIR = File("../data/tiles/ls8")
 
 data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
@@ -32,8 +33,7 @@ fun main() {
 	
 	TILE_OUTPUT_DIR.mkdirs()
 	
-	val dataDir = File("../data/ls8/")
-	val imageDirs = dataDir.listFiles { dir, name -> File(dir, name).isDirectory }!!
+	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	
 	imageDirs.forEach { processImageDir(it) }
 	
@@ -68,8 +68,10 @@ fun processImageDir(imageDir: File) {
 		
 		val bandImage = ImageIO.read(bandFile)
 		
-		assert(bandImage.width == groundTruth.width) { "B $bandNum doesn't match width and height. Band width = ${bandImage.width}, truth width = ${groundTruth.width}" }
-		assert(bandImage.height == groundTruth.height) { "B $bandNum doesn't match width and height. Band height = ${bandImage.width}, truth height = ${groundTruth.width}" }
+		if (bandImage.width != groundTruth.width || bandImage.height != groundTruth.height) {
+			println("${imageDir.name} B$bandNum doesn't match width and height. Band width = ${bandImage.width}, Band height = ${bandImage.height}, truth width = ${groundTruth.width}, truth height = ${groundTruth.height}")
+			continue
+		}
 		
 		val bandDir = File(TILE_OUTPUT_DIR, "B$bandNum")
 		bandDir.mkdirs()
