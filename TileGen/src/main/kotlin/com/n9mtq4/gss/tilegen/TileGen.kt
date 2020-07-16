@@ -5,6 +5,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import javax.imageio.ImageIO
 
+
 /**
  * Created by will on 7/13/20 at 6:18 PM.
  *
@@ -18,8 +19,8 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
 val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
 
-val DATA_INPUT_DIR = File("../data/ls8")
-val TILE_OUTPUT_DIR = File("../data/tiles/ls8")
+val DATA_INPUT_DIR = File("../data/ls7")
+val TILE_OUTPUT_DIR = File("../data/tiles/ls7")
 
 data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
 	
@@ -57,7 +58,8 @@ fun processImageDir(imageDir: File) {
 	truthDir.mkdirs()
 	tiles
 		.map { tile -> tile to extractTile(groundTruth, tile) }
-		.forEach { (tile, img) -> ImageIO.write(img, "png", File(truthDir, "${imgName}_${tile.nameString}_truth.png")) }
+		.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
+		.forEach { (tile, imgs) -> writeTileGroup(imgName, "truth", truthDir, tile, imgs) }
 	
 	// extract other bands
 	for (bandFile in otherBands) {
@@ -78,11 +80,55 @@ fun processImageDir(imageDir: File) {
 		
 		tiles
 			.map { tile -> tile to extractTile(bandImage, tile) }
-			.forEach { (tile, img) -> ImageIO.write(img, "png", File(bandDir, "${imgName}_${tile.nameString}_B$bandNum.png")) }
+			.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
+			.forEach { (tile, imgs) -> writeTileGroup(imgName, "B$bandNum", bandDir, tile, imgs) }
 		
 	}
 	
 }
+
+/**
+ * Writes out a group of tiles
+ * */
+fun writeTileGroup(imgName: String, bandStr: String, bandDir: File, tile: Tile, imgs: List<BufferedImage>) {
+	
+	val tileNamePrefix = "${imgName}_${tile.nameString}_$bandStr"
+	
+	imgs.forEachIndexed { index, img -> 
+		ImageIO.write(img, "png", File(bandDir, "${tileNamePrefix}_T${index}.png"))
+	}
+	
+}
+
+/**
+ * Apply transformations to a tile.
+ * Does rotation
+ * */
+fun applyTileTransformations(tile: Tile, tileImg: BufferedImage): List<BufferedImage> {
+	
+	val img90 = rotateImageClockwise90(tileImg)
+	val img180 = rotateImageClockwise90(img90)
+	val img270 = rotateImageClockwise90(img180)
+	
+	return listOf(tileImg, img90, img180, img270)
+	
+}
+
+/**
+ * Rotate a buffered image 90 degrees
+ * https://stackoverflow.com/a/52663539/5196460
+ * */
+fun rotateImageClockwise90(src: BufferedImage): BufferedImage {
+	val width = src.width
+	val height = src.height
+	val dest = BufferedImage(height, width, src.type) // assumes rotation doesn't affect size. works fine for squares
+	val graphics2D = dest.createGraphics()
+	graphics2D.translate((height - width) / 2, (height - width) / 2)
+	graphics2D.rotate(Math.PI / 2, height / 2.toDouble(), width / 2.toDouble())
+	graphics2D.drawRenderedImage(src, null)
+	return dest
+}
+
 
 /**
  * Get the band number from the file name.
