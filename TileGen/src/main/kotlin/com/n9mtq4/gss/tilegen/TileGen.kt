@@ -111,6 +111,28 @@ fun applyTileTransformations(tile: Tile, tileImg: BufferedImage): List<BufferedI
 	val img270 = rotateImageClockwise90(img180)
 	
 	return listOf(tileImg, img90, img180, img270)
+		.flatMap { listOf(it, mirrorImage(it)) }
+	
+}
+
+/**
+ * Mirrors a buffered image along the y-axis
+ * */
+fun mirrorImage(tileImg: BufferedImage): BufferedImage {
+	
+	val width = tileImg.width
+	val height = tileImg.height
+	val mirroredTile = BufferedImage(width, height, tileImg.type)
+	
+	for (y in 0 until height) {
+		for (x in 0 until width) {
+			
+			mirroredTile.setRGB(width - x, y, tileImg.getRGB(x, y))
+			
+		}
+	}
+	
+	return mirroredTile
 	
 }
 
