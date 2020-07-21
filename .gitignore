@@ -311,3 +311,7 @@ hs_err_pid*
 **/.idea
 
 data
+
+keras-unet-git
+keras-unet
+keras_unet
