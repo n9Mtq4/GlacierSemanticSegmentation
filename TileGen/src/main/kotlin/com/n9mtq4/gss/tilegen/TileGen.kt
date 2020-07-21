@@ -59,7 +59,7 @@ fun processImageDir(imageDir: File) {
 	tiles
 		.map { tile -> tile to extractTile(groundTruth, tile) }
 		.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
-		.forEach { (tile, imgs) -> writeTileGroup(imgName, "truth", truthDir, tile, imgs) }
+		.forEach { (tile, imgs) -> writeTileGroup(imgName, "", truthDir, tile, imgs) }
 	
 	// extract other bands
 	for (bandFile in otherBands) {
@@ -81,7 +81,7 @@ fun processImageDir(imageDir: File) {
 		tiles
 			.map { tile -> tile to extractTile(bandImage, tile) }
 			.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
-			.forEach { (tile, imgs) -> writeTileGroup(imgName, "B$bandNum", bandDir, tile, imgs) }
+			.forEach { (tile, imgs) -> writeTileGroup(imgName, "", bandDir, tile, imgs) }
 		
 	}
 	
