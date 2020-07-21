@@ -102,7 +102,7 @@ fun writeTileGroup(imgName: String, bandStr: String, bandDir: File, tile: Tile, 
 
 /**
  * Apply transformations to a tile.
- * Does rotation
+ * Does rotation, y-reflection
  * */
 fun applyTileTransformations(tile: Tile, tileImg: BufferedImage): List<BufferedImage> {
 	
@@ -127,7 +127,7 @@ fun mirrorImage(tileImg: BufferedImage): BufferedImage {
 	for (y in 0 until height) {
 		for (x in 0 until width) {
 			
-			mirroredTile.setRGB(width - x, y, tileImg.getRGB(x, y))
+			mirroredTile.setRGB(width - x - 1, y, tileImg.getRGB(x, y))
 			
 		}
 	}
