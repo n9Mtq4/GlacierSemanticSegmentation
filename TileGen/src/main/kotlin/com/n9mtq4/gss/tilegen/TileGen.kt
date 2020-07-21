@@ -17,6 +17,8 @@ const val TILE_HEIGHT = 512
 const val TILE_X_STRIDE = TILE_WIDTH / 2
 const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
+const val NO_TRANSFORMS = true
+
 val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
 
 val DATA_INPUT_DIR = File("../data/ls7")
@@ -105,6 +107,8 @@ fun writeTileGroup(imgName: String, bandStr: String, bandDir: File, tile: Tile, 
  * Does rotation, y-reflection
  * */
 fun applyTileTransformations(tile: Tile, tileImg: BufferedImage): List<BufferedImage> {
+	
+	if (NO_TRANSFORMS) return listOf(tileImg)
 	
 	val img90 = rotateImageClockwise90(tileImg)
 	val img180 = rotateImageClockwise90(img90)
