@@ -11,7 +11,7 @@ import javax.imageio.ImageIO
  */
 
 const val LANDSAT_IN_DIR_NAME = "../in/"
-const val LANDSAT_OUT_DIR_NAME = "../out/"
+const val LANDSAT_OUT_DIR_NAME = "../netin/"
 
 const val IMAGE_NAME = "LC08_L1TP_045005_20190814_20190820_01_T1"
 
