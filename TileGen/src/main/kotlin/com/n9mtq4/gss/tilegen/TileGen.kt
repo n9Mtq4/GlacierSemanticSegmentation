@@ -20,6 +20,7 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 const val NO_TRANSFORMS = true
 
 val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
+//val SKIP_BANDS = intArrayOf(1, 5, 7, 8) // landsat8 band 8 is panchromatic, so different resolution
 
 val DATA_INPUT_DIR = File("../data/ls7")
 val TILE_OUTPUT_DIR = File("../data/tiles/ls7")
@@ -36,9 +37,12 @@ fun main() {
 	
 	TILE_OUTPUT_DIR.mkdirs()
 	
+//	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
+	val tileAllImgs = emptyList<String>()
+	
 	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	
-	imageDirs.forEach { processImageDir(it) }
+	imageDirs.forEach { processImageDir(it, it.name in tileAllImgs) }
 	
 }
 
@@ -46,14 +50,15 @@ fun main() {
  * Processes a directory of a landsat image.
  * Finds tiles from the truth image. Saves the bands and truth tiles in the output directory.
  * */
-fun processImageDir(imageDir: File) {
+fun processImageDir(imageDir: File, tileAll: Boolean) {
 	
 	val imgName = imageDir.name
 	val groundTruthFile = getTruthFile(imageDir)
 	val otherBands = imageDir.listFiles { _, name -> name != groundTruthFile.name }!!
 	
 	val groundTruth = ImageIO.read(groundTruthFile)
-	val tiles = findTileLocs(groundTruth).toList()
+	val firstBand = ImageIO.read(otherBands.first())
+	val tiles = findTileLocs(groundTruth, firstBand, tileAll).toList()
 	
 	// extract truth files
 	val truthDir = File(TILE_OUTPUT_DIR, "truth")
@@ -190,12 +195,12 @@ fun getTruthFile(dir: File): File {
  * Gets a sequence of (x1, y1) of tiles that meet the criteria for a tile to be used in the dataset.
  * The width and height of the tiles are [TILE_WIDTH] and [TILE_HEIGHT]
  * */
-fun findTileLocs(groundTruth: BufferedImage) = sequence {
+fun findTileLocs(groundTruth: BufferedImage, firstBand: BufferedImage, tileAll: Boolean) = sequence {
 	
 	for (y in 0 until (groundTruth.height - 2 * TILE_Y_STRIDE) step TILE_Y_STRIDE) {
 		for (x in 0 until (groundTruth.width - 2 * TILE_X_STRIDE) step TILE_X_STRIDE) {
 			
-			if (isValidTile(groundTruth, x, y, TILE_WIDTH, TILE_HEIGHT)) {
+			if ((tileAll && tileNotBlack(firstBand, x, y, TILE_WIDTH, TILE_HEIGHT)) || isValidTile(groundTruth, x, y, TILE_WIDTH, TILE_HEIGHT)) {
 				yield(Tile(x, y, TILE_WIDTH, TILE_HEIGHT))
 			}
 			
@@ -203,6 +208,34 @@ fun findTileLocs(groundTruth: BufferedImage) = sequence {
 	}
 	
 	return@sequence
+	
+}
+
+fun tileNotBlack(band: BufferedImage, x1: Int, y1: Int, width: Int, height: Int): Boolean {
+	
+	val blackColor = -16777216
+	
+	val x2 = x1 + width
+	val y2 = y1 + height
+	
+	assert(x1 in 0 until band.width)
+	assert(x2 in 0 until band.width)
+	assert(y1 in 0 until band.height)
+	assert(y2 in 0 until band.height)
+	
+	val totalPixels = width * height
+	var blackPixels = 0
+	
+	// count number of white pixels
+	for (y in y1 until y2) {
+		for (x in x1 until x2) {
+			
+			if (band.getRGB(x, y) == blackColor) blackPixels++
+			
+		}
+	}
+	
+	return blackPixels < (12 * (totalPixels / 20))
 	
 }
 

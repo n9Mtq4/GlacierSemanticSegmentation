@@ -13,12 +13,12 @@ import javax.imageio.ImageIO
 const val LANDSAT_IN_DIR_NAME = "../in/"
 const val LANDSAT_OUT_DIR_NAME = "../netin/"
 
-const val IMAGE_NAME = "LC08_L1TP_042005_20150814_20170226_01_T1"
+const val IMAGE_NAME = "LC08_L1TP_045005_20190814_20190820_01_T1"
 
 fun main() {
 	
 	val inDir = File(LANDSAT_IN_DIR_NAME)
-	val bandFiles = inDir.listFiles { _, name -> name.endsWith(".jpg") }
+	val bandFiles = inDir.listFiles { _, name -> name.endsWith(".jpg") }!!
 	
 	val firstImage = ImageIO.read(bandFiles.first())
 	
