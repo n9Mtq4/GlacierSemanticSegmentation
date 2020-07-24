@@ -19,7 +19,8 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
 const val NO_TRANSFORMS = true
 
-val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
+val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 7)
+//val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
 //val SKIP_BANDS = intArrayOf(1, 5, 7, 8) // landsat8 band 8 is panchromatic, so different resolution
 
 val DATA_INPUT_DIR = File("../data/ls7")
@@ -37,8 +38,8 @@ fun main() {
 	
 	TILE_OUTPUT_DIR.mkdirs()
 	
-//	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
-	val tileAllImgs = emptyList<String>()
+	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
+//	val tileAllImgs = emptyList<String>()
 	
 	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	
@@ -73,7 +74,7 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		
 		val bandNum = getBandFromName(bandFile.name)
 		
-		if (bandNum in SKIP_BANDS) continue
+		if (bandNum !in INCLUDE_BANDS) continue
 		
 		val bandImage = ImageIO.read(bandFile)
 		
@@ -267,6 +268,6 @@ fun isValidTile(groundTruth: BufferedImage, x1: Int, y1: Int, width: Int, height
 		}
 	}
 	
-	return whitePixels >= (totalPixels / 20)
+	return (whitePixels >= (totalPixels / 30)) // && (whitePixels <= (29 * (totalPixels / 30)))
 	
 }

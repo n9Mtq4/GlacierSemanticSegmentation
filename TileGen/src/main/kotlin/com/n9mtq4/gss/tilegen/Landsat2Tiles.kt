@@ -13,11 +13,17 @@ import javax.imageio.ImageIO
 const val LANDSAT_IN_DIR_NAME = "../in/"
 const val LANDSAT_OUT_DIR_NAME = "../netin/"
 
-const val IMAGE_NAME = "LC08_L1TP_045005_20190814_20190820_01_T1"
+const val IMAGE_NAME = "LC08_L1TP_044005_20160713_20170222_01_T1"
 
 fun main() {
 	
-	val inDir = File(LANDSAT_IN_DIR_NAME)
+	landsat2Tiles(LANDSAT_IN_DIR_NAME, LANDSAT_OUT_DIR_NAME, IMAGE_NAME)
+	
+}
+
+fun landsat2Tiles(landSatInDirName: String, landSatOutDirName: String, imageName: String) {
+	
+	val inDir = File(landSatInDirName)
 	val bandFiles = inDir.listFiles { _, name -> name.endsWith(".jpg") }!!
 	
 	val firstImage = ImageIO.read(bandFiles.first())
@@ -26,9 +32,11 @@ fun main() {
 	
 	for (bandFile in bandFiles) {
 		
+		println("Tiling image ${bandFile.name}")
+		
 		val bandNum = getBandFromName(bandFile.name)
 		
-		if (bandNum in SKIP_BANDS) continue
+		if (bandNum !in INCLUDE_BANDS) continue
 		
 		val bandImage = ImageIO.read(bandFile)
 		
@@ -37,12 +45,12 @@ fun main() {
 			continue
 		}
 		
-		val bandDir = File(LANDSAT_OUT_DIR_NAME, "B$bandNum")
+		val bandDir = File(landSatOutDirName, "B$bandNum")
 		bandDir.mkdirs()
 		
 		tiles
 			.map { tile -> tile to extractTile(bandImage, tile) }
-			.forEach { (tile, img) -> writeOutUsingTile(IMAGE_NAME, bandDir, tile, img) }
+			.forEach { (tile, img) -> writeOutUsingTile(imageName, bandDir, tile, img) }
 		
 	}
 	
@@ -57,8 +65,8 @@ fun writeOutUsingTile(imgName: String, bandDir: File, tile: Tile, img: BufferedI
 
 fun getUsingTileLocs(img: BufferedImage) = sequence {
 	
-	for (y in 0 until (img.height - 2 * TILE_Y_STRIDE) step TILE_Y_STRIDE) {
-		for (x in 0 until (img.width - 2 * TILE_X_STRIDE) step TILE_X_STRIDE) {
+	for (y in 0 until (img.height - TILE_HEIGHT) step TILE_Y_STRIDE) {
+		for (x in 0 until (img.width - TILE_WIDTH) step TILE_X_STRIDE) {
 			
 			yield(Tile(x, y, TILE_WIDTH, TILE_HEIGHT))
 			
