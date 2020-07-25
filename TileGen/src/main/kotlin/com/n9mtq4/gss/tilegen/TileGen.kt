@@ -20,8 +20,6 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 const val NO_TRANSFORMS = true
 
 val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 7)
-//val SKIP_BANDS = intArrayOf(8) // landsat8 band 8 is panchromatic, so different resolution
-//val SKIP_BANDS = intArrayOf(1, 5, 7, 8) // landsat8 band 8 is panchromatic, so different resolution
 
 val DATA_INPUT_DIR = File("../data/ls7")
 val TILE_OUTPUT_DIR = File("../data/tiles/ls7")
@@ -38,8 +36,8 @@ fun main() {
 	
 	TILE_OUTPUT_DIR.mkdirs()
 	
-	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
-//	val tileAllImgs = emptyList<String>()
+//	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
+	val tileAllImgs = emptyList<String>()
 	
 	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	
@@ -86,8 +84,10 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		val bandDir = File(TILE_OUTPUT_DIR, "B$bandNum")
 		bandDir.mkdirs()
 		
+		val eqBandImage = equalizeHistogram(bandImage)
+		
 		tiles
-			.map { tile -> tile to extractTile(bandImage, tile) }
+			.map { tile -> tile to extractTile(eqBandImage, tile) }
 			.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
 			.forEach { (tile, imgs) -> writeTileGroup(imgName, "", bandDir, tile, imgs) }
 		

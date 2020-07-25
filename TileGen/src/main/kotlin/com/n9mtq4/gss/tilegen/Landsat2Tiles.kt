@@ -48,8 +48,10 @@ fun landsat2Tiles(landSatInDirName: String, landSatOutDirName: String, imageName
 		val bandDir = File(landSatOutDirName, "B$bandNum")
 		bandDir.mkdirs()
 		
+		val eqBandImage = equalizeHistogram(bandImage)
+		
 		tiles
-			.map { tile -> tile to extractTile(bandImage, tile) }
+			.map { tile -> tile to extractTile(eqBandImage, tile) }
 			.forEach { (tile, img) -> writeOutUsingTile(imageName, bandDir, tile, img) }
 		
 	}
