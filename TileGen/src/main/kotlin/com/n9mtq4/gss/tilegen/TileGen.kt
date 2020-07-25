@@ -84,10 +84,10 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		val bandDir = File(TILE_OUTPUT_DIR, "B$bandNum")
 		bandDir.mkdirs()
 		
-		val eqBandImage = equalizeHistogram(bandImage)
+		val adjBandImage = stretchToMinMax(bandImage)
 		
 		tiles
-			.map { tile -> tile to extractTile(eqBandImage, tile) }
+			.map { tile -> tile to extractTile(adjBandImage, tile) }
 			.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
 			.forEach { (tile, imgs) -> writeTileGroup(imgName, "", bandDir, tile, imgs) }
 		
