@@ -68,9 +68,9 @@ def main():
     
     model = custom_unet(
         input_shape,
-        filters=40,
+        filters=48,
         use_batch_norm=True,
-        dropout=0.15,  # 0.3
+        dropout=0.4,  # 0.3
         dropout_change_per_layer=0.0,
         num_layers=5
     )
