@@ -1,3 +1,8 @@
+# Glacier Semantic Segmentation
+
+![Example](/readme_data/img_1.png)
+
+
 Requirements
  - Python configured with tensorflow, numpy, gdal
  - Java (java command)
