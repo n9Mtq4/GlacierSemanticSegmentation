@@ -21,8 +21,8 @@ const val NO_TRANSFORMS = true
 
 val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 7)
 
-val DATA_INPUT_DIR = File("../data/ls7")
-val TILE_OUTPUT_DIR = File("../data/tiles/ls7")
+val DATA_INPUT_DIR = File("../data/ls78")
+val TILE_OUTPUT_DIR = File("../data/tiles/ls78")
 
 data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
 	
@@ -84,6 +84,7 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		val bandDir = File(TILE_OUTPUT_DIR, "B$bandNum")
 		bandDir.mkdirs()
 		
+		// try mean and std match from http://www.fmwconcepts.com/imagemagick/index.php matchimage
 		val adjBandImage = stretchToMinMax(bandImage)
 		
 		tiles
