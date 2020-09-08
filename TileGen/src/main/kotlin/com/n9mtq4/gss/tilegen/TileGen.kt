@@ -92,8 +92,8 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		bandDir.mkdirs()
 		
 		// try mean and std match from http://www.fmwconcepts.com/imagemagick/index.php matchimage
-//		val adjBandImage = stretchToMinMax(bandImage)
-		val adjBandImage = bandImage
+		val adjBandImage = stretchToMinMax(bandImage)
+//		val adjBandImage = bandImage
 		
 		tiles
 			.map { tile -> tile to extractTile(adjBandImage, tile) }
