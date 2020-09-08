@@ -58,12 +58,13 @@ fun createShadowMask(width: Int = TILE_WIDTH, height: Int = TILE_HEIGHT, seed: I
 	val random = Random(seed)
 	val noiseXOff = random.nextInt(0, 10000)
 	val noiseYOff = random.nextInt(0, 10000)
+	val darkness = random.nextDouble(0.4, 0.8)
 	
 	return Array(width) { x -> 
 		val nx = scale * x + noiseXOff
 		DoubleArray(height) { y ->
 			val ny = scale * y + noiseYOff
-			(0.7 + rampFunc(Perlin.noise(nx, ny, z))).coerceIn(0.0, 1.0)
+			(darkness + rampFunc(Perlin.noise(nx, ny, z))).coerceIn(0.0, 1.0)
 		}
 	}
 	
