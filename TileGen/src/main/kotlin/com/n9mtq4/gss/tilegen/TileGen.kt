@@ -1,5 +1,6 @@
 package com.n9mtq4.gss.tilegen
 
+import com.n9mtq4.gss.transform.applyShadow
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileNotFoundException
@@ -12,17 +13,22 @@ import javax.imageio.ImageIO
  * @author Will "n9Mtq4" Bresnahan
  */
 
-const val TILE_WIDTH = 512
-const val TILE_HEIGHT = 512
+const val TILE_WIDTH = 256
+const val TILE_HEIGHT = 256
 const val TILE_X_STRIDE = TILE_WIDTH / 2
 const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
-const val NO_TRANSFORMS = true
+const val NO_TRANSFORMS = false
 
 val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 7)
 
 val DATA_INPUT_DIR = File("../data/ls78")
 val TILE_OUTPUT_DIR = File("../data/tiles/ls78")
+
+val FULL_IMGS = arrayOf(
+	"LC08_L1TP_045005_20190814_20190820_01_T1",
+	"LE07_L1TP_040005_20020719_20170129_01_T1"
+)
 
 data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
 	
@@ -37,7 +43,8 @@ fun main() {
 	TILE_OUTPUT_DIR.mkdirs()
 	
 //	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
-	val tileAllImgs = emptyList<String>()
+//	val tileAllImgs = FULL_IMGS
+	val tileAllImgs = emptyArray<String>()
 	
 	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	
@@ -64,7 +71,7 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 	truthDir.mkdirs()
 	tiles
 		.map { tile -> tile to extractTile(groundTruth, tile) }
-		.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
+		.map { (tile, img) -> tile to applyTileTransformations(tile, img, -1) }
 		.forEach { (tile, imgs) -> writeTileGroup(imgName, "", truthDir, tile, imgs) }
 	
 	// extract other bands
@@ -85,11 +92,12 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		bandDir.mkdirs()
 		
 		// try mean and std match from http://www.fmwconcepts.com/imagemagick/index.php matchimage
-		val adjBandImage = stretchToMinMax(bandImage)
+//		val adjBandImage = stretchToMinMax(bandImage)
+		val adjBandImage = bandImage
 		
 		tiles
 			.map { tile -> tile to extractTile(adjBandImage, tile) }
-			.map { (tile, img) -> tile to applyTileTransformations(tile, img) }
+			.map { (tile, img) -> tile to applyTileTransformations(tile, img, bandNum) }
 			.forEach { (tile, imgs) -> writeTileGroup(imgName, "", bandDir, tile, imgs) }
 		
 	}
@@ -113,16 +121,16 @@ fun writeTileGroup(imgName: String, bandStr: String, bandDir: File, tile: Tile, 
  * Apply transformations to a tile.
  * Does rotation, y-reflection
  * */
-fun applyTileTransformations(tile: Tile, tileImg: BufferedImage): List<BufferedImage> {
+fun applyTileTransformations(tile: Tile, tileImg: BufferedImage, band: Int): List<BufferedImage> {
 	
 	if (NO_TRANSFORMS) return listOf(tileImg)
 	
-	val img90 = rotateImageClockwise90(tileImg)
-	val img180 = rotateImageClockwise90(img90)
-	val img270 = rotateImageClockwise90(img180)
+	if (band < 0) return listOf(tileImg, tileImg)
 	
-	return listOf(tileImg, img90, img180, img270)
-		.flatMap { listOf(it, mirrorImage(it)) }
+	val seed = tile.x1 * tile.x2 * tile.y1 * tile.y2
+	val shadowedTileImg = applyShadow(tileImg, seed)
+	
+	return listOf(tileImg, shadowedTileImg)
 	
 }
 
@@ -154,14 +162,13 @@ fun mirrorImage(tileImg: BufferedImage): BufferedImage {
 fun rotateImageClockwise90(src: BufferedImage): BufferedImage {
 	val width = src.width
 	val height = src.height
-	val dest = BufferedImage(height, width, src.type) // assumes rotation doesn't affect size. works fine for squares
+	val dest = BufferedImage(height, width, src.type) // rotation swaps width and height
 	val graphics2D = dest.createGraphics()
 	graphics2D.translate((height - width) / 2, (height - width) / 2)
 	graphics2D.rotate(Math.PI / 2, height / 2.toDouble(), width / 2.toDouble())
 	graphics2D.drawRenderedImage(src, null)
 	return dest
 }
-
 
 /**
  * Get the band number from the file name.
@@ -269,6 +276,6 @@ fun isValidTile(groundTruth: BufferedImage, x1: Int, y1: Int, width: Int, height
 		}
 	}
 	
-	return (whitePixels >= (totalPixels / 30)) // && (whitePixels <= (29 * (totalPixels / 30)))
+	return (whitePixels >= (totalPixels / 60)) // && (whitePixels <= (29 * (totalPixels / 30)))
 	
 }
