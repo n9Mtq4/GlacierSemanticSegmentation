@@ -20,10 +20,10 @@ const val TILE_Y_STRIDE = TILE_HEIGHT / 2
 
 const val NO_TRANSFORMS = false
 
-val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 7)
+val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 6, 7)
 
-val DATA_INPUT_DIR = File("../data/ls78")
-val TILE_OUTPUT_DIR = File("../data/tiles/ls78")
+val DATA_INPUT_DIR = File("../data/ls8")
+val TILE_OUTPUT_DIR = File("../data/tiles/ls8")
 
 val FULL_IMGS = arrayOf(
 	"LC08_L1TP_045005_20190814_20190820_01_T1",
@@ -92,8 +92,8 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 		bandDir.mkdirs()
 		
 		// try mean and std match from http://www.fmwconcepts.com/imagemagick/index.php matchimage
-		val adjBandImage = stretchToMinMax(bandImage)
-//		val adjBandImage = bandImage
+//		val adjBandImage = stretchToMinMax(bandImage)
+		val adjBandImage = bandImage
 		
 		tiles
 			.map { tile -> tile to extractTile(adjBandImage, tile) }

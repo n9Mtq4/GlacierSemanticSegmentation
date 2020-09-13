@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
  *
  * @author Will "n9Mtq4" Bresnahan
  */
-fun stretchToMinMax(img: BufferedImage): BufferedImage {
+fun stretchToMinMax(img: BufferedImage, minThresh: Int = 3): BufferedImage {
 	
 	val newImg = BufferedImage(img.width, img.height, BufferedImage.TYPE_BYTE_GRAY)
 	
@@ -20,7 +20,7 @@ fun stretchToMinMax(img: BufferedImage): BufferedImage {
 			
 			val grey = img.raster.getSample(x, y, 0)
 			@Suppress("ConvertTwoComparisonsToRangeCheck")
-			if (grey < min && grey >= 3) min = grey // min will always be 0 with black rotation border, so make it at least 3
+			if (grey < min && grey >= minThresh) min = grey // min will always be 0 with black rotation border, so make it at least 3
 			if (grey > max) max = grey
 			
 		}
