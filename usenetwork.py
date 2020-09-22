@@ -7,11 +7,12 @@ from pathlib import Path
 from PIL import Image
 
 # disable GPU
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import tensorflow as tf
 import tensorflow.keras as keras
 from keras_unet.models import custom_unet
+from bcdunet import BCDU_net_D3, BCDU_net_D1
 
 
 MODEL_NAME = "model"
@@ -63,17 +64,19 @@ def write_out_img(name, img_data):
 def main():
     band1_paths = list(BAND_DIRS[0].glob("*.png"))
     
-    input_shape = (512, 512, 6)  # 6 channel image
-    # input_shape = (512, 512, 3)  # rgb image
+    input_shape = (256, 256, 6)  # 6 channel image
+    # input_shape = (256, 256, 3)  # rgb image
     
-    model = custom_unet(
-        input_shape,
-        filters=48,
-        use_batch_norm=True,
-        dropout=0.4,  # 0.3
-        dropout_change_per_layer=0.0,
-        num_layers=5
-    )
+    model = BCDU_net_D3(input_size=input_shape)
+    
+    # model = custom_unet(
+    #     input_shape,
+    #     filters=48,
+    #     use_batch_norm=True,
+    #     dropout=0.4,  # 0.3
+    #     dropout_change_per_layer=0.0,
+    #     num_layers=5
+    # )
     
     model_filename = f'./{MODEL_NAME}.h5'
     model.load_weights(model_filename)
