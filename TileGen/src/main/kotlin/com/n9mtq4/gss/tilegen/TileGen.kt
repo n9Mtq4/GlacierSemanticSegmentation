@@ -25,9 +25,9 @@ val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 6, 7)
 val DATA_INPUT_DIR = File("../data/ls8")
 val TILE_OUTPUT_DIR = File("../data/tiles/ls8")
 
-val FULL_IMGS = arrayOf(
-	"LC08_L1TP_045005_20190814_20190820_01_T1",
-	"LE07_L1TP_040005_20020719_20170129_01_T1"
+val FULL_IMGS = arrayOf<String>(
+//	"LC08_L1TP_045005_20190814_20190820_01_T1",
+//	"LE07_L1TP_040005_20020719_20170129_01_T1"
 )
 
 data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
@@ -40,11 +40,17 @@ data class Tile(val x1: Int, val y1: Int, val width: Int, val height: Int) {
 
 fun main() {
 	
+	tileGenGeneration()
+	
+}
+
+fun tileGenGeneration() {
+	
 	TILE_OUTPUT_DIR.mkdirs()
 	
 //	val tileAllImgs = listOf("LC08_L1TP_044006_20150711_20170227_01_T1")
-//	val tileAllImgs = FULL_IMGS
-	val tileAllImgs = emptyArray<String>()
+	val tileAllImgs = FULL_IMGS
+//	val tileAllImgs = emptyArray<String>()
 	
 	val imageDirs = DATA_INPUT_DIR.listFiles { dir, name -> File(dir, name).isDirectory }!!
 	

@@ -16,12 +16,13 @@ import java.lang.RuntimeException
 fun main(args: Array<String>) {
 	
 	if (args.size != 1) {
-		println("Expected 1 argument. Pick l2t or stitch")
+		println("Expected 1 argument. Pick generate, l2t, or stitch")
 		return
 	}
 	
 	when (args[0]) {
 		
+		"generate" -> tileGenGeneration()
 		"l2t" -> ifaceLandsat2Tiles()
 		"stitch" -> ifaceStitch()
 		else -> println("Unknown option. Pick l2t or stitch")
