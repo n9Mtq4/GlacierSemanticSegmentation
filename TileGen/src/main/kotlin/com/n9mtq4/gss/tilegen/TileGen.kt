@@ -67,6 +67,7 @@ fun processImageDir(imageDir: File, tileAll: Boolean) {
 	val imgName = imageDir.name
 	val groundTruthFile = getTruthFile(imageDir)
 	val otherBands = imageDir.listFiles { _, name -> name != groundTruthFile.name }!!
+		.filter { it.extension in arrayOf("png", "jpg", "jpeg") }
 	
 	val groundTruth = ImageIO.read(groundTruthFile)
 	val firstBand = ImageIO.read(otherBands.first())
@@ -183,7 +184,7 @@ fun rotateImageClockwise90(src: BufferedImage): BufferedImage {
 fun getBandFromName(name: String): Int {
 	
 	val regex = """B(?<band>\d)""".toRegex()
-	return regex.find(name)!!.groups["band"]!!.value.toInt()
+	return regex.find(name)?.groups?.get("band")?.value?.toInt() ?: throw IllegalArgumentException("Can't extract band number from '$name'")
 	
 }
 
