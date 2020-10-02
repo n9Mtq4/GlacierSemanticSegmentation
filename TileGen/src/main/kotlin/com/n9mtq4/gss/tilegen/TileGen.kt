@@ -6,7 +6,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import javax.imageio.ImageIO
 
-
 /**
  * Created by will on 7/13/20 at 6:18 PM.
  *
@@ -22,8 +21,8 @@ const val NO_TRANSFORMS = false
 
 val INCLUDE_BANDS = intArrayOf(1, 2, 3, 4, 5, 6, 7)
 
-val DATA_INPUT_DIR = File("../data/ls8")
-val TILE_OUTPUT_DIR = File("../data/tiles/ls8")
+val DATA_INPUT_DIR = File("../data/test")
+val TILE_OUTPUT_DIR = File("../data/tiles/test")
 
 val FULL_IMGS = arrayOf<String>(
 //	"LC08_L1TP_045005_20190814_20190820_01_T1",
@@ -63,6 +62,8 @@ fun tileGenGeneration() {
  * Finds tiles from the truth image. Saves the bands and truth tiles in the output directory.
  * */
 fun processImageDir(imageDir: File, tileAll: Boolean) {
+	
+	println("Generating tiles for ${imageDir.name}")
 	
 	val imgName = imageDir.name
 	val groundTruthFile = getTruthFile(imageDir)
@@ -118,9 +119,38 @@ fun writeTileGroup(imgName: String, bandStr: String, bandDir: File, tile: Tile, 
 	
 	val tileNamePrefix = "${imgName}_${tile.nameString}_$bandStr"
 	
-	imgs.forEachIndexed { index, img -> 
-		ImageIO.write(img, "png", File(bandDir, "${tileNamePrefix}_T${index}.png"))
+	imgs
+		.map { img2ByteGray(it) }
+		.forEachIndexed { index, img -> 
+			ImageIO.write(img, "png", File(bandDir, "${tileNamePrefix}_T${index}.png"))
+		}
+	
+}
+
+fun img2ByteGray(img: BufferedImage): BufferedImage {
+	
+	// early return if already correct type
+	if (img.type == BufferedImage.TYPE_BYTE_GRAY) return img
+	
+	val byteImg = BufferedImage(img.width, img.height, BufferedImage.TYPE_BYTE_GRAY)
+	
+	// conversion path for binary
+	if (img.type == BufferedImage.TYPE_BYTE_BINARY) {
+		forPixels(img.width, img.height) { x, y ->
+			val color = img.raster.getSample(x, y, 0) * 255
+			byteImg.raster.setSample(x, y, 0, color)
+		}
 	}
+	
+	// conversion path for ushort
+	if (img.type == BufferedImage.TYPE_USHORT_GRAY) {
+		forPixels(img.width, img.height) { x, y ->
+			val color = img.raster.getSample(x, y, 0) shr 8
+			byteImg.raster.setSample(x, y, 0, color)
+		}
+	}
+	
+	return byteImg
 	
 }
 
