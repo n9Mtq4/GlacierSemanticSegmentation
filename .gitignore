@@ -325,4 +325,7 @@ netout
 
 libs
 
+logs
+logs/**
+
 **.h5
