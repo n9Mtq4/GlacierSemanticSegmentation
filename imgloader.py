@@ -74,7 +74,8 @@ class NumpyArrayIterator(Iterator):
                  subset=None,
                  ignore_class_split=False,
                  dtype='float32',
-                 transform_img=lambda x: x):
+                 transform_img=lambda x: x,
+                 network_heads=1):
         self.dtype = dtype
         if (type(x) is tuple) or (type(x) is list):
             if type(x[1]) is not list:
@@ -160,6 +161,7 @@ class NumpyArrayIterator(Iterator):
         self.save_prefix = save_prefix
         self.save_format = save_format
         self.transform_img = transform_img
+        self.network_heads = network_heads
         super(NumpyArrayIterator, self).__init__(x.shape[0],
                                                  batch_size,
                                                  shuffle,
@@ -192,6 +194,8 @@ class NumpyArrayIterator(Iterator):
                   else [batch_x] + batch_x_miscs,)
         if self.y is None:
             return output[0]
+        if self.network_heads > 1:
+            batch_y = self.network_heads * [batch_y]
         output += (batch_y,)
         if self.sample_weight is not None:
             output += (self.sample_weight[index_array],)
