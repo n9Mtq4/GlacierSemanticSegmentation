@@ -235,10 +235,10 @@ def u2net_block(inputs, in_ch = 3, out_ch = 1, kernel_initializer = 'he_normal',
         padding=padding
     )(concatenate([d1, d2, d3, d4, d5, d6]))
     
-    def sig(x):
-        return Activation('sigmoid')(x)
+    def sig(x, n):
+        return Activation('sigmoid', name=n)(x)
     
-    return sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)
+    return sig(d0, 'ad0'), sig(d1, 'ad1'), sig(d2, 'ad2'), sig(d3, 'ad3'), sig(d4, 'ad4'), sig(d5, 'ad5'), sig(d6, 'ad6')
 
 
 # In[ ]:
@@ -289,10 +289,10 @@ def u2netp_block(inputs, in_ch = 3, out_ch = 1, kernel_initializer = 'he_normal'
         padding=padding
     )(concatenate([d1, d2, d3, d4, d5, d6]))
     
-    def sig(x):
-        return Activation('sigmoid')(x)
+    def sig(x, n):
+        return Activation('sigmoid', name=n)(x)
     
-    return sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)
+    return sig(d0, 'ad0'), sig(d1, 'ad1'), sig(d2, 'ad2'), sig(d3, 'ad3'), sig(d4, 'ad4'), sig(d5, 'ad5'), sig(d6, 'ad6')
 
 
 # In[ ]:
