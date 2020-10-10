@@ -1,8 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import glob
 import os
 import sys
+import json
 from pathlib import Path
 from PIL import Image
 
@@ -11,8 +11,6 @@ from PIL import Image
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from keras_unet.models import custom_unet
-from bcdunet import BCDU_net_D3, BCDU_net_D1
 
 
 MODEL_NAME = "model"
@@ -64,22 +62,11 @@ def write_out_img(name, img_data):
 def main():
     band1_paths = list(BAND_DIRS[0].glob("*.png"))
     
-    input_shape = (256, 256, 6)  # 6 channel image
-    # input_shape = (256, 256, 3)  # rgb image
+    model_config = json.load(f'{MODEL_NAME}.config.json')
+    network_heads = model_config['network_heads']
+    primary_head = model_config['primary_head']
     
-    model = BCDU_net_D3(input_size=input_shape)
-    
-    # model = custom_unet(
-    #     input_shape,
-    #     filters=48,
-    #     use_batch_norm=True,
-    #     dropout=0.4,  # 0.3
-    #     dropout_change_per_layer=0.0,
-    #     num_layers=5
-    # )
-    
-    model_filename = f'./{MODEL_NAME}.h5'
-    model.load_weights(model_filename)
+    model = tf.keras.models.load_model(f'{MODEL_NAME}.h5')
     
     batch_groups = list(divide_chunks(band1_paths, LOAD_SIZE))
     for i, batch in enumerate(batch_groups):
@@ -87,6 +74,8 @@ def main():
         # print(f"{len(batch)}")
         names, x_pred = readin_batch(batch)
         y_pred = model.predict(x_pred)
+        if network_heads > 1:
+            y_pred = y_pred[primary_head]
         for name, pred in zip(names, y_pred):
             write_out_img(name, pred)
 
