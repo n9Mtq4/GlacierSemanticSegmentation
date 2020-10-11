@@ -62,10 +62,6 @@ def write_out_img(name, img_data):
 def main():
     band1_paths = list(BAND_DIRS[0].glob("*.png"))
     
-    model_config = json.load(f'{MODEL_NAME}.config.json')
-    network_heads = model_config['network_heads']
-    primary_head = model_config['primary_head']
-    
     model = tf.keras.models.load_model(f'{MODEL_NAME}.h5')
     
     batch_groups = list(divide_chunks(band1_paths, LOAD_SIZE))
@@ -74,8 +70,6 @@ def main():
         # print(f"{len(batch)}")
         names, x_pred = readin_batch(batch)
         y_pred = model.predict(x_pred)
-        if network_heads > 1:
-            y_pred = y_pred[primary_head]
         for name, pred in zip(names, y_pred):
             write_out_img(name, pred)
 
