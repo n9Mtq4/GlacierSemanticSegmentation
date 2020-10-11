@@ -48,7 +48,8 @@ fun landsat2Tiles(landSatInDirName: String, landSatOutDirName: String, imageName
 		val bandDir = File(landSatOutDirName, "B$bandNum")
 		bandDir.mkdirs()
 		
-		val adjBandImage = stretchToMinMax(bandImage)
+//		val adjBandImage = stretchToMinMax(bandImage)
+		val adjBandImage = bandImage
 		
 		tiles
 			.map { tile -> tile to extractTile(adjBandImage, tile) }
