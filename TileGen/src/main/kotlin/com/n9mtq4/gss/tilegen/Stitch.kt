@@ -3,6 +3,7 @@ package com.n9mtq4.gss.tilegen
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 /**
  * Created by will on 7/21/20 at 11:10 PM.
@@ -44,27 +45,33 @@ fun stitch(landSatInDirName: String, predInDir: String, predOutDir: String, imag
 	val outFile = File(predOutDir, "${imageName}_NN.png")
 	ImageIO.write(predImage, "png", outFile)
 	
-	thresholdImg(predImage)
-	
-	val outFileThresh = File(predOutDir, "${imageName}_NNT.png")
-	ImageIO.write(predImage, "png", outFileThresh)
+	for (threshold in intArrayOf(2, 5, 7)) {
+		
+		val thresholdByte = (255.0 * (threshold / 10.0)).roundToInt()
+		val timg = thresholdImg(predImage, thresholdByte)
+		
+		val outFileThresh = File(predOutDir, "${imageName}_NNT$threshold.png")
+		ImageIO.write(timg, "png", outFileThresh)
+		
+	}
 	
 }
 
-fun thresholdImg(predImage: BufferedImage) {
+fun thresholdImg(predImage: BufferedImage, threshold: Int = 128): BufferedImage {
 	
-	val black = -16777216
-	val white = -1
+	val newImg = BufferedImage(predImage.width, predImage.height, predImage.type)
 	
 	for (y in 0 until predImage.height) {
 		for (x in 0 until predImage.width) {
 			
-			val color = predImage.getRGB(x, y)
-			val newColor = if (color == black) white else black
-			predImage.setRGB(x, y, newColor)
+			val color = predImage.raster.getSample(x, y, 0)
+			val newColor = if (color >= threshold) 255 else 0
+			newImg.raster.setSample(x, y, 0, newColor)
 			
 		}
 	}
+	
+	return newImg
 	
 }
 
