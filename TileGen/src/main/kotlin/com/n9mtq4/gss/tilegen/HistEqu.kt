@@ -21,7 +21,7 @@ fun equalizeHistogram(srcImg: BufferedImage): BufferedImage {
 	histogram[0] = 0L
 	
 	val csum = histogram
-		.scanReduce { acc, i -> acc + i }
+		.runningReduce { acc, i -> acc + i }
 		.toLongArray()
 	
 	val mincs = csum.min()!!
