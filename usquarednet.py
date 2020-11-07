@@ -294,6 +294,8 @@ def u2netp_block(
     out_ch = 1,
     kernel_initializer = 'he_normal',
     padding = 'same',
+    rsu_mid_ch = 16,
+    rsu_out_ch = 64,
     inter_enc_dropout = 0.0,
     inter_dec_dropout = 0.0,
     enc_intra_enc_dropout = 0.0,
@@ -301,49 +303,49 @@ def u2netp_block(
     dec_intra_enc_dropout = 0.0,
     dec_intra_dec_dropout = 0.0,
 ):
-    stage1 = rsu7(inputs, in_ch, 16, 64, enc_intra_enc_dropout, enc_intra_dec_dropout)
+    stage1 = rsu7(inputs, in_ch, rsu_mid_ch, rsu_out_ch, enc_intra_enc_dropout, enc_intra_dec_dropout)
     if inter_enc_dropout > 0.0:
         stage1 = SpatialDropout2D(inter_enc_dropout)(stage1)
     pool12 = MaxPooling2D((2, 2))(stage1)
-    stage2 = rsu6(pool12, 64, 16, 64, enc_intra_enc_dropout, enc_intra_dec_dropout)
+    stage2 = rsu6(pool12, rsu_out_ch, rsu_mid_ch, rsu_out_ch, enc_intra_enc_dropout, enc_intra_dec_dropout)
     if inter_enc_dropout > 0.0:
         stage2 = SpatialDropout2D(inter_enc_dropout)(stage2)
     pool23 = MaxPooling2D((2, 2))(stage2)
-    stage3 = rsu5(pool23, 64, 16, 64, enc_intra_enc_dropout, enc_intra_dec_dropout)
+    stage3 = rsu5(pool23, rsu_out_ch, rsu_mid_ch, rsu_out_ch, enc_intra_enc_dropout, enc_intra_dec_dropout)
     if inter_enc_dropout > 0.0:
         stage3 = SpatialDropout2D(inter_enc_dropout)(stage3)
     pool34 = MaxPooling2D((2, 2))(stage3)
-    stage4 = rsu4(pool34, 64, 16, 64, enc_intra_enc_dropout, enc_intra_dec_dropout)
+    stage4 = rsu4(pool34, rsu_out_ch, rsu_mid_ch, rsu_out_ch, enc_intra_enc_dropout, enc_intra_dec_dropout)
     if inter_enc_dropout > 0.0:
         stage4 = SpatialDropout2D(inter_enc_dropout)(stage4)
     pool45 = MaxPooling2D((2, 2))(stage4)
-    stage5 = rsu4f(pool45, 64, 16, 64, enc_intra_enc_dropout, enc_intra_dec_dropout)
+    stage5 = rsu4f(pool45, rsu_out_ch, rsu_mid_ch, rsu_out_ch, enc_intra_enc_dropout, enc_intra_dec_dropout)
     if inter_enc_dropout > 0.0:
         stage5 = SpatialDropout2D(inter_enc_dropout)(stage5)
     pool56 = MaxPooling2D((2, 2))(stage5)
     
-    stage6 = rsu4f(pool56, 64, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage6 = rsu4f(pool56, rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage6 = SpatialDropout2D(inter_dec_dropout)(stage6)
     stage6up = UpSampling2D((2, 2), interpolation='bilinear')(stage6)
     
-    stage5d = rsu4f(concatenate([stage6up, stage5]), 128, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage5d = rsu4f(concatenate([stage6up, stage5]), 2 * rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage5d = SpatialDropout2D(inter_dec_dropout)(stage5d)
     stage5dup = UpSampling2D((2, 2), interpolation='bilinear')(stage5d)
-    stage4d = rsu4(concatenate([stage5dup, stage4]), 128, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage4d = rsu4(concatenate([stage5dup, stage4]), 2 * rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage4d = SpatialDropout2D(inter_dec_dropout)(stage4d)
     stage4dup = UpSampling2D((2, 2), interpolation='bilinear')(stage4d)
-    stage3d = rsu5(concatenate([stage4dup, stage3]), 128, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage3d = rsu5(concatenate([stage4dup, stage3]), 2 * rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage3d = SpatialDropout2D(inter_dec_dropout)(stage3d)
     stage3dup = UpSampling2D((2, 2), interpolation='bilinear')(stage3d)
-    stage2d = rsu6(concatenate([stage3dup, stage2]), 128, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage2d = rsu6(concatenate([stage3dup, stage2]), 2 * rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage2d = SpatialDropout2D(inter_dec_dropout)(stage2d)
     stage2dup = UpSampling2D((2, 2), interpolation='bilinear')(stage2d)
-    stage1d = rsu6(concatenate([stage2dup, stage1]), 128, 16, 64, dec_intra_enc_dropout, dec_intra_dec_dropout)
+    stage1d = rsu6(concatenate([stage2dup, stage1]), 2 * rsu_out_ch, rsu_mid_ch, rsu_out_ch, dec_intra_enc_dropout, dec_intra_dec_dropout)
     if inter_dec_dropout > 0.0:
         stage1d = SpatialDropout2D(inter_dec_dropout)(stage1d)
     
